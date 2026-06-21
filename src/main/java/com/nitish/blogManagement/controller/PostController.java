@@ -27,13 +27,12 @@ public class PostController {
         return new ResponseEntity<>(service.getPostById(id) , HttpStatus.OK);
     }
 
-    @PostMapping("/user/{userId}")
+    @PostMapping
     public ResponseEntity<Post> createPost(
-            @PathVariable Integer userId,
             @RequestBody Post post) {
 
         return new ResponseEntity<>(
-                service.createPost(userId, post),
+                service.createPost(post),
                 HttpStatus.CREATED
         );
     }

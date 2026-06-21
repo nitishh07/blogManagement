@@ -5,6 +5,7 @@ import com.nitish.blogManagement.model.User;
 import com.nitish.blogManagement.repo.PostRepo;
 import com.nitish.blogManagement.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,9 +29,15 @@ public class PostService {
         return repo.findById(id).orElseThrow(() -> new RuntimeException("Post not found"));
     }
 
-    public Post createPost(Integer userId, Post post) {
+    public Post createPost(Post post) {
 
-        User user = userRepo.findById(userId)
+        //Post create karte waqt logged-in user ko author banao.
+        String email =
+                SecurityContextHolder.getContext()
+                        .getAuthentication()
+                        .getName();
+
+        User user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         post.setAuthor(user);
@@ -43,6 +50,22 @@ public class PostService {
         Post existingPost = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
 
+        //user can only update his post
+        String email =
+                SecurityContextHolder.getContext()
+                        .getAuthentication()
+                        .getName();
+
+        if(!existingPost.getAuthor()
+                .getEmail()
+                .equals(email)){
+
+            throw new RuntimeException(
+                    "You cannot edit someone else's post"
+            );
+        }
+
+
         existingPost.setTitle(post.getTitle());
         existingPost.setContent(post.getContent());
 
@@ -50,7 +73,7 @@ public class PostService {
     }
 
 
-    public void deletePost(Integer id) {
+    public String deletePost(Integer id) {
 
         Post post = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
@@ -67,5 +90,7 @@ public class PostService {
         }
 
         repo.delete(post);
+
+        return "Post deleted";
     }
 }

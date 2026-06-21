@@ -7,6 +7,7 @@ import com.nitish.blogManagement.repo.CommentRepo;
 import com.nitish.blogManagement.repo.PostRepo;
 import com.nitish.blogManagement.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,11 +33,15 @@ public class CommentService {
         return commentRepo.findById(id).orElseThrow(() -> new RuntimeException("Comment not found"));
     }
 
-    public Comment createComment(Integer userId,
-                                 Integer postId,
-                                 Comment comment) {
+    public Comment createComment(Integer postId,
+            Comment comment) {
 
-        User user = userRepo.findById(userId)
+        String email =
+                SecurityContextHolder.getContext()
+                        .getAuthentication()
+                        .getName();
+
+        User user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Post post = postRepo.findById(postId)
@@ -51,6 +56,20 @@ public class CommentService {
     public Comment updateComment(Integer id , Comment comment) {
         Comment existingComment = commentRepo.findById(id).orElseThrow(() -> new RuntimeException("Comment not found"));
 
+        String email =
+                SecurityContextHolder.getContext()
+                        .getAuthentication()
+                        .getName();
+
+        if(!existingComment.getUser()
+                .getEmail()
+                .equals(email)){
+
+            throw new RuntimeException(
+                    "You can edit only your own comment"
+            );
+        }
+
         existingComment.setContent(comment.getContent());
 
         return commentRepo.save(existingComment);
@@ -59,6 +78,21 @@ public class CommentService {
     public String deleteComment(Integer id) {
         Comment comment = commentRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Comment not found"));
+
+        String email =
+                SecurityContextHolder.getContext()
+                        .getAuthentication()
+                        .getName();
+
+        if(!comment.getUser()
+                .getEmail()
+                .equals(email)){
+
+            throw new RuntimeException(
+                    "You can delete only your own comment"
+            );
+        }
+
         commentRepo.delete(comment);
 
         return "Comment deleted successfully";

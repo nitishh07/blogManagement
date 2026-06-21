@@ -2,6 +2,8 @@ package com.nitish.blogManagement.controller;
 
 import com.nitish.blogManagement.config.AuthResponse;
 import com.nitish.blogManagement.config.JwtService;
+import com.nitish.blogManagement.dto.RegisterRequest;
+import com.nitish.blogManagement.dto.UserResponse;
 import com.nitish.blogManagement.model.LoginRequest;
 import com.nitish.blogManagement.model.User;
 import com.nitish.blogManagement.repo.UserRepo;
@@ -35,30 +37,26 @@ public class AuthController {
     private UserRepo repo;
 
     @PostMapping("/register")
-    public User register(@RequestBody User user){
+    public UserResponse register(
+            @RequestBody RegisterRequest request) {
 
-        if(repo.findByEmail(user.getEmail()).isPresent()){
+        if(repo.findByEmail(request.getEmail()).isPresent()){
             throw new RuntimeException("Email already exists");
         }
 
-        String rawPassword = user.getPassword();
+        User user = new User();
 
-        String encodedPassword =
-                passwordEncoder.encode(rawPassword);
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setPassword(request.getPassword());
 
-        System.out.println("RAW PASSWORD = " + rawPassword);
-        System.out.println("ENCODED PASSWORD = " + encodedPassword);
-        System.out.println(
-                "MATCH = " +
-                        passwordEncoder.matches(
-                                rawPassword,
-                                encodedPassword
-                        )
+        User savedUser = userService.addUser(user);
+
+        return new UserResponse(
+                savedUser.getId(),
+                savedUser.getName(),
+                savedUser.getEmail()
         );
-
-        user.setPassword(encodedPassword);
-
-        return userService.addUser(user);
     }
 
     @PostMapping("/login")
