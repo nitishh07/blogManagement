@@ -1,149 +1,131 @@
 # Blog Management System
 
-A simple Blog Management System built using Spring Boot and MySQL. The application allows users to create, read, update, and delete blog posts and comments while maintaining relationships between users, posts, and comments.
+A secure RESTful Blog Management System built using **Spring Boot**, **Spring Security**, **JWT Authentication**, **Spring Data JPA**, and **MySQL**. Users can register, log in, create blog posts, comment on posts, and manage only their own content.
+
+---
 
 ## Features
 
-* User Management
+### Authentication & Authorization
 
-  * Create User
-  * View All Users
-  * View User by ID
-  * Update User
-  * Delete User
+* User Registration
+* User Login
+* JWT Token Generation
+* Password Encryption using BCrypt
+* Stateless Authentication using JWT
+* Protected API Endpoints
 
-* Blog Post Management
+### Post Management
 
-  * Create Post
-  * View All Posts
-  * View Post by ID
-  * Update Post
-  * Delete Post
+* Create Post
+* View All Posts
+* View Post by ID
+* Update Own Post
+* Delete Own Post
 
-* Comment Management
+### Comment Management
 
-  * Create Comment
-  * View All Comments
-  * View Comment by ID
-  * Delete Comment
+* Add Comment to a Post
+* View All Comments
+* View Comment by ID
+* Update Own Comment
+* Delete Own Comment
+
+### Security Features
+
+* JWT Authentication Filter
+* Password Hashing using BCrypt
+* Ownership Validation
+
+  * Users can edit only their own posts.
+  * Users can delete only their own posts.
+  * Users can edit only their own comments.
+  * Users can delete only their own comments.
+
+### Exception Handling
+
+* Global Exception Handler
+* Custom Error Responses
+* Validation Error Handling
+
+---
 
 ## Tech Stack
 
+### Backend
+
 * Java 21
 * Spring Boot
+* Spring Security
 * Spring Data JPA
 * Hibernate
+
+### Database
+
 * MySQL
+
+### Authentication
+
+* JWT (JSON Web Token)
+
+### Documentation
+
+* Swagger / OpenAPI
+
+### Build Tool
+
 * Maven
-* Lombok
 
-## Database Design
-
-### User
-
-| Field    | Type    |
-| -------- | ------- |
-| id       | Integer |
-| name     | String  |
-| email    | String  |
-| password | String  |
-
-### Post
-
-| Field     | Type          |
-| --------- | ------------- |
-| id        | Integer       |
-| title     | String        |
-| content   | String        |
-| createdAt | LocalDateTime |
-| updatedAt | LocalDateTime |
-
-### Comment
-
-| Field     | Type          |
-| --------- | ------------- |
-| id        | Integer       |
-| content   | String        |
-| createdAt | LocalDateTime |
-
-## Relationships
-
-* One User can create many Posts.
-* One User can create many Comments.
-* One Post can have many Comments.
-
-```text
-User (1) -------- (N) Post
-
-User (1) -------- (N) Comment
-
-Post (1) -------- (N) Comment
-```
-
-## API Endpoints
-
-### User APIs
-
-```http
-GET    /api/users
-GET    /api/users/{id}
-POST   /api/users
-PUT    /api/users/{id}
-DELETE /api/users/{id}
-```
-
-### Post APIs
-
-```http
-GET    /api/posts
-GET    /api/posts/{id}
-POST   /api/posts
-PUT    /api/posts/{id}
-DELETE /api/posts/{id}
-```
-
-### Comment APIs
-
-```http
-GET    /api/comments
-GET    /api/comments/{id}
-POST   /api/comments
-DELETE /api/comments/{id}
-```
+---
 
 ## Project Structure
 
 ```text
 src
- ├── controller
- ├── service
- ├── repo
- ├── model
- └── BlogManagementApplication
+│
+├── controller
+│   ├── AuthController
+│   ├── PostController
+│   ├── CommentController
+│   └── UserController
+│
+├── service
+│   ├── UserService
+│   ├── PostService
+│   ├── CommentService
+│   └── MyUserDetailsService
+│
+├── model
+│   ├── User
+│   ├── Post
+│   ├── Comment
+│   ├── LoginRequest
+│   └── UserPrincipal
+│
+├── repo
+│   ├── UserRepo
+│   ├── PostRepo
+│   └── CommentRepo
+│
+├── config
+│   ├── SecurityConfig
+│   ├── JwtService
+│   ├── JwtFilter
+│   └── AuthResponse
+│
+├── exception
+│   └── GlobalExceptionHandler
+│
+└── dto
+    ├── RegisterRequest
+    └── UserResponse
 ```
 
-## Future Improvements
+---
 
-* Spring Security
-* BCrypt Password Hashing
-* JWT Authentication
-* Role-Based Authorization
-* Swagger Documentation
-* Global Exception Handling
-* Validation using @Valid
-* Unit Testing with JUnit and Mockito
-* Email Notifications
+## Database Configuration
 
-## Getting Started
-
-1. Clone the repository.
-2. Create a MySQL database.
-
-```sql
-CREATE DATABASE blogdb;
-```
-
-3. Configure `application.properties`.
+Configure MySQL in `application.properties`
 
 ```properties
 spring.datasource.url=jdbc:mysql://localhost:3306/blogdb
@@ -151,18 +133,217 @@ spring.datasource.username=root
 spring.datasource.password=your_password
 
 spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
 ```
 
-4. Run the application.
+---
+
+## API Endpoints
+
+### Authentication
+
+#### Register
+
+```http
+POST /auth/register
+```
+
+Request
+
+```json
+{
+  "name": "Nitish",
+  "email": "nitish@gmail.com",
+  "password": "1234"
+}
+```
+
+---
+
+#### Login
+
+```http
+POST /auth/login
+```
+
+Request
+
+```json
+{
+  "email": "nitish@gmail.com",
+  "password": "1234"
+}
+```
+
+Response
+
+```json
+{
+  "token": "jwt_token"
+}
+```
+
+---
+
+## Posts
+
+### Create Post
+
+```http
+POST /api/posts
+```
+
+Request
+
+```json
+{
+  "title": "My First Blog",
+  "content": "This is my first blog post."
+}
+```
+
+---
+
+### Get All Posts
+
+```http
+GET /api/posts
+```
+
+---
+
+### Get Post By ID
+
+```http
+GET /api/posts/{id}
+```
+
+---
+
+### Update Post
+
+```http
+PUT /api/posts/{id}
+```
+
+---
+
+### Delete Post
+
+```http
+DELETE /api/posts/{id}
+```
+
+---
+
+## Comments
+
+### Create Comment
+
+```http
+POST /api/comments/post/{postId}
+```
+
+Request
+
+```json
+{
+  "content": "Great post!"
+}
+```
+
+---
+
+### Get All Comments
+
+```http
+GET /api/comments
+```
+
+---
+
+### Get Comment By ID
+
+```http
+GET /api/comments/{id}
+```
+
+---
+
+### Update Comment
+
+```http
+PUT /api/comments/{id}
+```
+
+---
+
+### Delete Comment
+
+```http
+DELETE /api/comments/{id}
+```
+
+---
+
+## Swagger Documentation
+
+After running the application:
+
+```text
+http://localhost:8080/swagger-ui/index.html
+```
+
+---
+
+## Running the Application
+
+Clone the repository:
+
+```bash
+git clone <repository-url>
+```
+
+Navigate to project directory:
+
+```bash
+cd blogManagement
+```
+
+Build the project:
+
+```bash
+mvn clean install
+```
+
+Run the application:
 
 ```bash
 mvn spring-boot:run
 ```
 
-5. Access APIs using Postman.
+---
+
+## Future Improvements
+
+* Role Based Authorization (ADMIN / USER)
+* Like & Dislike System
+* Pagination & Sorting
+* Search Posts by Title
+* Docker Support
+* Refresh Tokens
+* Email Verification
+* Password Reset Functionality
+* Unit & Integration Testing
+
+---
 
 ## Author
 
-Nitish Kumar Pandit
+**Nitish Kumar Pandit**
 
-Spring Boot backend project created for learning REST APIs, JPA relationships, and database management.
+* KIIT University
+* B.Tech CSE
+* Backend Development | Spring Boot | Java | MySQL
+
+⭐ If you found this project useful, consider giving it a star on GitHub.
